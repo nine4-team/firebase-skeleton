@@ -1,0 +1,29 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    // Public-ish user profile document (example).
+    match /users/{uid} {
+      allow read, write: if signedIn() && request.auth.uid == uid;
+    }
+
+    // Quota counters should only be written by trusted server code (Cloud Functions).
+    // Clients may read their own counters for UX, but server remains authoritative.
+    match /users/{uid}/quota/{objectKey} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow create, update, delete: if false;
+    }
+
+    // Example quota'd objects path. In real apps, map this to each feature's collection(s).
+    // Recommended posture: write via Cloud Function so quotas/entitlements are enforced.
+    match /users/{uid}/objects/{objectId} {
+      allow read: if signedIn() && request.auth.uid == uid;
+      allow create, update, delete: if false;
+    }
+  }
+}
+
