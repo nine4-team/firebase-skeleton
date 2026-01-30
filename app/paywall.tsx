@@ -90,7 +90,7 @@ export default function PaywallScreen() {
 
   return (
     <Screen>
-      <ScrollView contentContainerStyle={styles.container}>
+      <ScrollView style={{ flex: 1 }} contentContainerStyle={styles.container}>
         <AppText variant="h1" style={styles.title}>
           Upgrade to Pro
         </AppText>

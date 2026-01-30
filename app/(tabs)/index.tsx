@@ -2,6 +2,8 @@ import { ScrollView, StyleSheet, View } from 'react-native';
 
 import { AppText } from '../../src/components/AppText';
 import { ExpandableCard } from '../../src/components/ExpandableCard';
+import { ItemCard } from '../../src/components/ItemPreviewCard';
+import { GroupedItemCard } from '../../src/components';
 import { Screen } from '../../src/components/Screen';
 import { useScreenTabs } from '../../src/components/ScreenTabs';
 import { CARD_LIST_GAP, layout } from '../../src/ui';
@@ -53,6 +55,74 @@ function ComponentsScreenContent() {
             { key: 'edit', label: 'Edit', onPress: () => console.log('Edit pressed') },
             { key: 'delete', label: 'Delete', onPress: () => console.log('Delete pressed') },
           ]}
+        />
+
+        <ItemCard
+          description="CB2 — Pebble Side Table (white oak), sculpted profile with a softly rounded edge and a compact footprint for tight living spaces"
+          sku="CB2-PS-001"
+          sourceLabel="Wayfair"
+          priceLabel="$249.00"
+          statusLabel="In project"
+          locationLabel="Living room North wall"
+          defaultSelected={false}
+          onSelectedChange={(next) => console.log('Selected changed', next)}
+          bookmarked={true}
+          onBookmarkPress={() => console.log('Bookmark pressed')}
+          onAddImagePress={() => console.log('Add image pressed')}
+          onMenuPress={() => console.log('Menu pressed')}
+          onPress={() => console.log('Item card pressed')}
+        />
+
+        <GroupedItemCard
+          summary={{
+            description: 'Wayfair — Pillow Insert (Down alternative)',
+            sku: 'WF-PI-STD-001',
+            sourceLabel: 'Wayfair',
+            locationLabel: 'Guest room Closet',
+            thumbnailUri:
+              'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=240&q=80',
+          }}
+          countLabel="×2"
+          totalLabel="$59.98"
+          defaultSelected={false}
+          onSelectedChange={(next: boolean) => console.log('Group selected', next)}
+          items={[
+            {
+              description: 'Wayfair — Pillow Insert (Down alternative)',
+              sku: 'WF-PI-STD-001',
+              sourceLabel: 'Wayfair',
+              priceLabel: '$29.99',
+              statusLabel: 'In project',
+              locationLabel: 'Guest room Closet',
+              thumbnailUri:
+                'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=240&q=80',
+              defaultSelected: true,
+              onSelectedChange: (next: boolean) => console.log('Child item 1 selected', next),
+              bookmarked: false,
+              onBookmarkPress: () => console.log('Child item 1 bookmark pressed'),
+              onAddImagePress: () => console.log('Child item 1 add image pressed'),
+              onMenuPress: () => console.log('Child item 1 menu pressed'),
+              onPress: () => console.log('Child item 1 pressed'),
+            },
+            {
+              description: 'Wayfair — Pillow Insert (Down alternative)',
+              sku: 'WF-PI-STD-001',
+              sourceLabel: 'Wayfair',
+              priceLabel: '$29.99',
+              statusLabel: 'In project',
+              locationLabel: 'Guest room Closet',
+              thumbnailUri:
+                'https://images.unsplash.com/photo-1582719478250-c89cae4dc85b?auto=format&fit=crop&w=240&q=80',
+              defaultSelected: false,
+              onSelectedChange: (next: boolean) => console.log('Child item 2 selected', next),
+              bookmarked: true,
+              onBookmarkPress: () => console.log('Child item 2 bookmark pressed'),
+              onAddImagePress: () => console.log('Child item 2 add image pressed'),
+              onMenuPress: () => console.log('Child item 2 menu pressed'),
+              onPress: () => console.log('Child item 2 pressed'),
+            },
+          ]}
+          defaultExpanded={false}
         />
       </ScrollView>
     );

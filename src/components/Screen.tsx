@@ -48,7 +48,7 @@ export const Screen: React.FC<ScreenProps> = ({
   const [selectedKey, setSelectedKey] = useState<string>(initialTabKey ?? defaultKey);
 
   const content = (
-    <View style={[getScreenContainerStyle(uiKitTheme), containerStyle]}>
+    <View style={[styles.container, getScreenContainerStyle(uiKitTheme), containerStyle]}>
       {title ? <TopHeader title={title} onPressMenu={onPressMenu} /> : null}
       {title ? (
         <ScreenTabs tabs={resolvedTabs} value={selectedKey} onChange={setSelectedKey} initialTabKey={initialTabKey} />
@@ -81,6 +81,9 @@ export const Screen: React.FC<ScreenProps> = ({
 };
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+  },
   content: {
     flex: 1,
     paddingTop: appTokens.screen.contentPaddingTop,

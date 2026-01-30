@@ -195,6 +195,18 @@ export default function SignInScreen() {
       }),
     [theme, uiKitTheme]
   );
+
+  // Keep the logo + card "anchored" to the email layout's vertical position to avoid
+  // the whole stack re-centering when the tab content height changes.
+  const anchorSpacerHeight = useMemo(() => {
+    const min = theme.spacing.xxxl;
+    if (!emailAnchorHeight) return min;
+
+    const usableHeight = windowHeight - insets.top - insets.bottom;
+    const centeredTop = Math.max(0, (usableHeight - emailAnchorHeight) / 2);
+    return Math.max(min, centeredTop);
+  }, [emailAnchorHeight, insets.bottom, insets.top, theme, windowHeight]);
+
   const dynamicStyles = useMemo(
     () =>
       StyleSheet.create({
@@ -210,17 +222,6 @@ export default function SignInScreen() {
   );
 
   const trimmedEmail = useMemo(() => email.trim(), [email]);
-
-  // Keep the logo + card "anchored" to the email layout's vertical position to avoid
-  // the whole stack re-centering when the tab content height changes.
-  const anchorSpacerHeight = useMemo(() => {
-    const min = theme.spacing.xxxl;
-    if (!emailAnchorHeight) return min;
-
-    const usableHeight = windowHeight - insets.top - insets.bottom;
-    const centeredTop = Math.max(0, (usableHeight - emailAnchorHeight) / 2);
-    return Math.max(min, centeredTop);
-  }, [emailAnchorHeight, insets.bottom, insets.top, theme, windowHeight]);
 
   const handleContentLayout = useCallback(
     (e: any) => {
@@ -320,9 +321,7 @@ export default function SignInScreen() {
                 <AppButton
                   title="Sign In with Google"
                   onPress={handleGoogleSignIn}
-                  leftIcon={
-                    <GoogleMark size={18} color={theme.colors.background} />
-                  }
+                  leftIcon={<GoogleMark size={18} color={theme.colors.background} />}
                 />
 
                 <Pressable onPress={handleGoogleSignIn} style={styles.googleSignUpLink}>

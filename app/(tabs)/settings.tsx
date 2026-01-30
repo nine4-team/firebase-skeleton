@@ -1,5 +1,5 @@
 import React, { useMemo, useState } from 'react';
-import { View, StyleSheet, Alert } from 'react-native';
+import { View, StyleSheet, Alert, ScrollView } from 'react-native';
 import { useRouter } from 'expo-router';
 import MaterialIcons from '@expo/vector-icons/MaterialIcons';
 import { Screen } from '../../src/components/Screen';
@@ -72,24 +72,22 @@ function SettingsContent({ selectedSubTabKey }: SettingsContentProps) {
 
   if (primaryTabKey === 'tab-two') {
     return (
-      <View style={layout.screenBodyTopMd}>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
         <AppText variant="body">Settings Tab Two content goes here.</AppText>
-      </View>
+      </ScrollView>
     );
   }
 
   if (primaryTabKey === 'tab-three') {
     return (
-      <View style={styles.container}>
-        <View style={layout.screenBodyTopMd}>
-          <AppText variant="body">{subtabLabel} content goes here.</AppText>
-        </View>
-      </View>
+      <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
+        <AppText variant="body">{subtabLabel} content goes here.</AppText>
+      </ScrollView>
     );
   }
 
   return (
-    <View style={styles.container}>
+    <ScrollView style={styles.scroll} contentContainerStyle={styles.scrollContent} showsVerticalScrollIndicator={false}>
       <View style={styles.section}>
         <AppText
           variant="caption"
@@ -182,16 +180,9 @@ function SettingsContent({ selectedSubTabKey }: SettingsContentProps) {
         </View>
       </View>
 
-      {!isPro && (
-        <AppButton title="Upgrade to Pro" onPress={() => router.push('/paywall')} style={styles.button} />
-      )}
+      {!isPro && <AppButton title="Upgrade to Pro" onPress={() => router.push('/paywall')} style={styles.button} />}
 
-      <AppButton
-        title="Restore Purchases"
-        variant="secondary"
-        onPress={handleRestorePurchases}
-        style={styles.button}
-      />
+      <AppButton title="Restore Purchases" variant="secondary" onPress={handleRestorePurchases} style={styles.button} />
 
       <AppButton
         title={isAuthBypassEnabled ? 'Sign In' : 'Sign Out'}
@@ -199,7 +190,7 @@ function SettingsContent({ selectedSubTabKey }: SettingsContentProps) {
         onPress={handleSignOut}
         style={[styles.button, styles.signOutButton]}
       />
-    </View>
+    </ScrollView>
   );
 }
 
@@ -223,6 +214,12 @@ export default function SettingsScreen() {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
+  },
+  scroll: {
+    flex: 1,
+  },
+  scrollContent: {
+    paddingTop: layout.screenBodyTopMd.paddingTop,
   },
   section: {
     marginBottom: 18,

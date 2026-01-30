@@ -86,6 +86,12 @@ export function ScreenTabs({
       <ScrollView
         horizontal
         showsHorizontalScrollIndicator={false}
+        scrollEnabled
+        alwaysBounceHorizontal
+        bounces
+        directionalLockEnabled
+        nestedScrollEnabled
+        keyboardShouldPersistTaps="handled"
         contentContainerStyle={[styles.scrollContent, themed.scrollContent, contentContainerStyle]}
       >
         {tabs.map((tab) => {
@@ -128,11 +134,15 @@ const styles = StyleSheet.create({
   },
   scrollContent: {
     flexDirection: 'row',
+    // IMPORTANT: keep this wrapping its children, otherwise the content width can
+    // incorrectly clamp to the viewport width and prevent horizontal scrolling.
+    flexGrow: 0,
   },
   tab: {
     paddingHorizontal: 12,
     paddingTop: 15,
     paddingBottom: 10,
+    flexShrink: 0,
     marginRight: 8,
     marginBottom: -1,
     justifyContent: 'center',
