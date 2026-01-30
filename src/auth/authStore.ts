@@ -20,13 +20,17 @@ export const useAuthStore = create<AuthState>((set) => ({
   setInitialized: (isInitialized) => set({ isInitialized }),
   signIn: async (email: string, password: string) => {
     if (!isFirebaseConfigured || !auth) {
-      throw new Error('Firebase is not configured. Add EXPO_PUBLIC_FIREBASE_* values to .env.');
+      throw new Error(
+        'Firebase is not configured. Add native config files and/or EXPO_PUBLIC_FIREBASE_* values to .env.'
+      );
     }
     await signInWithEmailAndPassword(auth, email, password);
   },
   signUp: async (email: string, password: string) => {
     if (!isFirebaseConfigured || !auth) {
-      throw new Error('Firebase is not configured. Add EXPO_PUBLIC_FIREBASE_* values to .env.');
+      throw new Error(
+        'Firebase is not configured. Add native config files and/or EXPO_PUBLIC_FIREBASE_* values to .env.'
+      );
     }
     await createUserWithEmailAndPassword(auth, email, password);
   },

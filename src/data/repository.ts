@@ -1,6 +1,6 @@
 /**
  * Repository interface for data access
- * Apps can implement online-first (Firestore) or offline-first (SQLite + sync)
+ * Apps can implement online-first (Firestore) or offline-ready (native Firestore offline)
  */
 export interface Repository<T> {
   list(): Promise<T[]>;
@@ -66,15 +66,15 @@ export class FirestoreRepository<T extends { id: string }> implements Repository
 
 /**
  * Factory function to create a repository
- * In the future, this can be extended to return offline-first implementations
+ * In the future, this can be extended to return offline-ready implementations
  */
 export function createRepository<T extends { id: string }>(
   collectionPath: string,
   mode: 'online' | 'offline' = 'online'
 ): Repository<T> {
   if (mode === 'offline') {
-    // TODO: Return offline-first implementation when implemented
-    throw new Error('Offline-first mode not yet implemented');
+    // TODO: Return offline-ready implementation when implemented
+    throw new Error('Offline-ready mode not yet implemented');
   }
   return new FirestoreRepository<T>(collectionPath);
 }

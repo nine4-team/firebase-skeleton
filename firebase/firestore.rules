@@ -6,6 +6,20 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function isRequestCreate() {
+      return request.resource.data.keys().hasOnly([
+        'type',
+        'status',
+        'createdAt',
+        'createdBy',
+        'payload'
+      ]) &&
+      request.resource.data.status == 'pending' &&
+      request.resource.data.type is string &&
+      request.resource.data.createdBy == request.auth.uid &&
+      request.resource.data.createdAt == request.time;
+    }
+
     // Public-ish user profile document (example).
     match /users/{uid} {
       allow read, write: if signedIn() && request.auth.uid == uid;
@@ -23,6 +37,20 @@ service cloud.firestore {
     match /users/{uid}/objects/{objectId} {
       allow read: if signedIn() && request.auth.uid == uid;
       allow create, update, delete: if false;
+    }
+
+    // Request-doc pattern (multi-doc correctness). These are scoped examples.
+    // Adjust membership checks to your auth model (accounts, teams, etc.).
+    match /accounts/{accountId}/projects/{projectId}/requests/{requestId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && isRequestCreate();
+      allow update, delete: if false;
+    }
+
+    match /accounts/{accountId}/inventory/requests/{requestId} {
+      allow read: if signedIn();
+      allow create: if signedIn() && isRequestCreate();
+      allow update, delete: if false;
     }
   }
 }

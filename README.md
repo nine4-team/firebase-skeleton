@@ -7,7 +7,7 @@ A GitHub template for Expo + React Native apps with:
 - `@nine4/ui-kit` theming + primitives
 - RevenueCat entitlements (Pro)
 - Configurable freemium quotas
-- Optional **offline-first** data module (local-first + sync)
+- Optional **offline-ready** data module (native Firestore offline + scoped listeners, with optional search index and request-doc workflows)
 
 ## Quick Start
 
@@ -30,7 +30,8 @@ cp .env.example .env
 ```
 
 Required:
-- `EXPO_PUBLIC_FIREBASE_*` - Firebase web config (from Firebase Console)
+- `EXPO_PUBLIC_FIREBASE_*` - Firebase config (from Firebase Console)
+  - For native platforms: Also download `google-services.json` (Android) and `GoogleService-Info.plist` (iOS) from Firebase Console
 - `EXPO_PUBLIC_REVENUECAT_API_KEY` - RevenueCat public API key
 
 ### 3. Customize App Config
@@ -40,7 +41,7 @@ Edit `src/config/appConfig.ts`:
 - `appName`: Your app name
 - `quotas`: Define quota types (e.g., "memory", "project", "entry")
 - `revenueCatEntitlementId`: Your RevenueCat entitlement ID (default: "pro")
-- `dataModeDefault`: "online" or "offline" (offline-first not yet implemented)
+- `dataModeDefault`: "online" or "offline" (both use native Firebase; offline-ready behavior is the difference)
 
 ### 3a. Customize the app logo
 
@@ -66,22 +67,28 @@ npm start
 
 The app will connect to emulators by default (set `EXPO_PUBLIC_USE_FIREBASE_EMULATORS=false` to disable).
 
-### 5. Build for Testing (EAS Build / Dev Client)
+### 5. Build for Testing (EAS Build / Dev Client) - **REQUIRED**
 
-RevenueCat IAP requires a **dev client** (not Expo Go):
+This template includes **native Firebase modules** for offline-ready support. A **dev client** is required when using native Firebase (Expo Go is not supported for native Firebase):
 
+**Prerequisites:**
+- Install EAS CLI: `npm install -g eas-cli`
+- Configure EAS: `eas build:configure`
+- Add Firebase native config files:
+  - **Android**: Download `google-services.json` from Firebase Console → Project Settings → Your apps → Android app
+  - **iOS**: Download `GoogleService-Info.plist` from Firebase Console → Project Settings → Your apps → iOS app
+  - Place these files in the project root (they will be automatically linked during build)
+
+**Build dev client:**
 ```bash
-# Install EAS CLI
-npm install -g eas-cli
-
-# Configure EAS
-eas build:configure
-
-# Build dev client
+# iOS
 eas build --profile development --platform ios
-# or
+
+# Android
 eas build --profile development --platform android
 ```
+
+**Important**: After installing native Firebase packages, you must run `npx expo prebuild` or build with EAS to generate native code. The dev client workflow is required for this template.
 
 ## Project Structure
 
@@ -214,14 +221,20 @@ const result = await createWithQuota({
 });
 ```
 
-## Offline-First vs Online-First (Parameterized)
+## Backend Mode: Native-First (Offline-Ready)
 
-This template aims to avoid forcing a global decision. Instead, features should call a `Repository<T>` interface, and each app (or entity) can choose:
+This template is **dev-client-first** and does not support Expo Go as a development target.
 
-- **Online-first**: Firestore reads/writes directly (simpler, default).
-- **Offline-first**: local DB first (SQLite) + outbox queue + batch sync (more robust, better cost control) - **not yet implemented**.
+- **Native-first (default)**: Firebase native SDK + Firestore-native offline persistence + scoped listeners.
+- **Online-only apps**: still use native Firebase, but follow online-first UX patterns and do not rely on offline persistence.
+- **Optional offline local search**: SQLite FTS as a **derived search index only** (rebuildable, non-authoritative) for apps that need robust offline multi-field search.
+- **Multi-doc correctness**: for any operation that updates multiple docs or enforces invariants, the recommended default is a **request-doc workflow** (client writes one request; server applies the multi-doc update atomically and marks it applied/failed).
 
-### Current Implementation
+### Important: React Native “offline-ready” requires native Firestore
+
+In React Native, durable offline persistence requires the **native Firestore SDK** and a **dev client** workflow.
+
+### Repository Usage (Current)
 
 ```typescript
 import { createRepository } from '@/data/repository';
@@ -245,11 +258,13 @@ Firestore cost usually explodes due to:
 
 Default patterns in this template should prefer:
 
-- incremental "pull since cursor" reads
-- batched writes (especially from an outbox)
-- opt-in listeners only for small, bounded queries
+- **bounded queries** (active scope only)
+- **scoped listeners** (only for small, bounded sets; detach on background)
+- **instrumentation** (track active listeners + reads/writes over time)
 
-See `src/data/offline-first.md` for future offline-first implementation notes.
+**Note**: This template does not recommend cursor pulls/outbox as the default cost optimization. Instead, cost management focuses on listener scoping: bounded queries, avoiding broad listeners, detaching on background, and instrumenting reads/writes/listener count.
+
+See `SETUP.md` (offline-ready + request-doc workflows) and `OFFLINE_FIRST_V2_SPEC.md` (deeper rationale/phasing).
 
 ## Building & Deployment
 

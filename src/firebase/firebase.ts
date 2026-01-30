@@ -1,3 +1,13 @@
+/**
+ * Firebase initialization module.
+ *
+ * **Important**: Offline-ready React Native apps should use the native SDK
+ * via `firebase.native.ts` and a dev client build. Wiring the data layer to
+ * native Firestore is a planned follow-up.
+ *
+ * See `OFFLINE_FIRST_V2_SPEC.md` for details on backend modes.
+ */
+
 import { initializeApp, getApps, FirebaseApp } from 'firebase/app';
 import { getAuth, connectAuthEmulator, Auth, initializeAuth, getReactNativePersistence } from 'firebase/auth';
 import { getFirestore, connectFirestoreEmulator, Firestore } from 'firebase/firestore';

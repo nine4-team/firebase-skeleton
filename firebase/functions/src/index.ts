@@ -1,5 +1,6 @@
 import * as admin from 'firebase-admin';
 import { onCall, HttpsError } from 'firebase-functions/v2/https';
+import { onDocumentCreated } from 'firebase-functions/v2/firestore';
 
 admin.initializeApp();
 
@@ -74,4 +75,119 @@ export const createWithQuota = onCall<CreateWithQuotaRequest>(async (request) =>
 
   return result;
 });
+
+type RequestStatus = 'pending' | 'applied' | 'failed';
+type RequestDoc = {
+  type: string;
+  status: RequestStatus;
+  createdAt?: admin.firestore.Timestamp;
+  createdBy?: string;
+  appliedAt?: admin.firestore.Timestamp;
+  errorCode?: string;
+  errorMessage?: string;
+  payload?: Record<string, unknown>;
+};
+
+async function setRequestApplied(
+  requestRef: admin.firestore.DocumentReference,
+  extra: Record<string, unknown> = {}
+) {
+  await requestRef.update({
+    status: 'applied',
+    appliedAt: admin.firestore.FieldValue.serverTimestamp(),
+    errorCode: admin.firestore.FieldValue.delete(),
+    errorMessage: admin.firestore.FieldValue.delete(),
+    ...extra
+  });
+}
+
+async function setRequestFailed(
+  requestRef: admin.firestore.DocumentReference,
+  errorCode: string,
+  errorMessage: string
+) {
+  await requestRef.update({
+    status: 'failed',
+    errorCode,
+    errorMessage,
+    appliedAt: admin.firestore.FieldValue.delete()
+  });
+}
+
+type RequestHandlerContext = {
+  requestRef: admin.firestore.DocumentReference;
+  requestData: RequestDoc;
+  accountId: string;
+  projectId?: string;
+  requestId: string;
+};
+
+const requestHandlers: Record<string, (context: RequestHandlerContext) => Promise<void>> = {
+  // Example "no-op" handler to prove the pipeline works end-to-end.
+  // Replace or extend with real handlers that perform transactions.
+  PING: async ({ requestRef }) => {
+    await setRequestApplied(requestRef);
+  }
+};
+
+async function processRequestDoc(context: RequestHandlerContext) {
+  const { requestRef, requestData } = context;
+  if (!requestData) {
+    await setRequestFailed(requestRef, 'invalid', 'Request data missing.');
+    return;
+  }
+
+  if (requestData.status !== 'pending') {
+    // Ignore replays or client-mutations; server owns status transitions.
+    return;
+  }
+
+  const handler = requestHandlers[requestData.type];
+  if (!handler) {
+    await setRequestFailed(requestRef, 'unimplemented', `No handler for ${requestData.type}.`);
+    return;
+  }
+
+  try {
+    await handler(context);
+  } catch (error) {
+    const message = error instanceof Error ? error.message : 'Unknown error.';
+    await setRequestFailed(requestRef, 'handler_error', message);
+  }
+}
+
+export const onProjectRequestCreated = onDocumentCreated(
+  'accounts/{accountId}/projects/{projectId}/requests/{requestId}',
+  async (event) => {
+    const requestRef = event.data?.ref;
+    const requestData = event.data?.data() as RequestDoc | undefined;
+    if (!requestRef) {
+      return;
+    }
+    await processRequestDoc({
+      requestRef,
+      requestData: requestData ?? { status: 'failed', type: 'unknown' },
+      accountId: event.params.accountId,
+      projectId: event.params.projectId,
+      requestId: event.params.requestId
+    });
+  }
+);
+
+export const onInventoryRequestCreated = onDocumentCreated(
+  'accounts/{accountId}/inventory/requests/{requestId}',
+  async (event) => {
+    const requestRef = event.data?.ref;
+    const requestData = event.data?.data() as RequestDoc | undefined;
+    if (!requestRef) {
+      return;
+    }
+    await processRequestDoc({
+      requestRef,
+      requestData: requestData ?? { status: 'failed', type: 'unknown' },
+      accountId: event.params.accountId,
+      requestId: event.params.requestId
+    });
+  }
+);
 
