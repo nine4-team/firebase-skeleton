@@ -2,6 +2,8 @@
 
 The template provides a `Repository<T>` interface that allows apps to choose between **online-first** (default) and **offline-first** implementations.
 
+For the detailed, generalizable implementation spec (SQLite schema, outbox, delta pulls, lifecycle, and extension points), see `OFFLINE_FIRST_IMPLEMENTATION.md` in the repo root.
+
 ## Current Status
 
 - ✅ **Online-first implementation**: `FirestoreRepository` - direct Firestore access

@@ -20,6 +20,7 @@
     "expo-asset": "~11.0.5",
     "expo-font": "~13.0.4",
     "expo-router": "~4.0.0",
+    "expo-sqlite": "^16.0.10",
     "expo-status-bar": "~2.0.0",
     "firebase": "^11.0.0",
     "react": "18.3.1",
