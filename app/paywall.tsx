@@ -5,12 +5,57 @@ import { Screen } from '../src/components/Screen';
 import { AppText } from '../src/components/AppText';
 import { AppButton } from '../src/components/AppButton';
 import { useBillingStore } from '../src/billing/billingStore';
-import { theme } from '../src/theme/theme';
+import { useTheme } from '../src/theme/ThemeProvider';
 
 export default function PaywallScreen() {
   const router = useRouter();
   const { offerings, purchasePackage, isPro } = useBillingStore();
   const [loading, setLoading] = useState(false);
+  const theme = useTheme();
+  const styles = StyleSheet.create({
+    container: {
+      flexGrow: 1,
+      paddingTop: theme.spacing.xl,
+    },
+    title: {
+      marginBottom: theme.spacing.xl,
+      textAlign: 'center',
+    },
+    features: {
+      marginBottom: theme.spacing.xl,
+    },
+    feature: {
+      marginBottom: theme.spacing.sm,
+    },
+    packageInfo: {
+      backgroundColor: theme.card.backgroundColor,
+      padding: theme.spacing.lg,
+      borderRadius: 8,
+      marginBottom: theme.spacing.xl,
+      alignItems: 'center',
+    },
+    packageTitle: {
+      marginBottom: theme.spacing.sm,
+    },
+    packagePrice: {
+      fontSize: 24,
+      fontWeight: 'bold',
+      color: theme.colors.primary,
+      marginBottom: theme.spacing.xs,
+    },
+    packageDescription: {
+      textAlign: 'center',
+      marginTop: theme.spacing.xs,
+    },
+    noPackages: {
+      textAlign: 'center',
+      marginBottom: theme.spacing.xl,
+      color: theme.colors.textSecondary,
+    },
+    button: {
+      marginTop: theme.spacing.md,
+    },
+  });
 
   useEffect(() => {
     if (isPro) {
@@ -112,48 +157,3 @@ export default function PaywallScreen() {
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flexGrow: 1,
-    paddingTop: theme.spacing.xl,
-  },
-  title: {
-    marginBottom: theme.spacing.xl,
-    textAlign: 'center',
-  },
-  features: {
-    marginBottom: theme.spacing.xl,
-  },
-  feature: {
-    marginBottom: theme.spacing.sm,
-  },
-  packageInfo: {
-    backgroundColor: theme.card.backgroundColor,
-    padding: theme.spacing.lg,
-    borderRadius: 8,
-    marginBottom: theme.spacing.xl,
-    alignItems: 'center',
-  },
-  packageTitle: {
-    marginBottom: theme.spacing.sm,
-  },
-  packagePrice: {
-    fontSize: 24,
-    fontWeight: 'bold',
-    color: theme.colors.primary,
-    marginBottom: theme.spacing.xs,
-  },
-  packageDescription: {
-    textAlign: 'center',
-    marginTop: theme.spacing.xs,
-  },
-  noPackages: {
-    textAlign: 'center',
-    marginBottom: theme.spacing.xl,
-    color: theme.colors.textSecondary,
-  },
-  button: {
-    marginTop: theme.spacing.md,
-  },
-});

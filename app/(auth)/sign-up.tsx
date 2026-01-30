@@ -5,7 +5,8 @@ import { Screen } from '../../src/components/Screen';
 import { AppText } from '../../src/components/AppText';
 import { AppButton } from '../../src/components/AppButton';
 import { useAuthStore } from '../../src/auth/authStore';
-import { theme } from '../../src/theme/theme';
+import { useTheme, useUIKitTheme } from '../../src/theme/ThemeProvider';
+import { getCardStyle, getTextInputStyle } from '../../src/ui';
 
 export default function SignUpScreen() {
   const [email, setEmail] = useState('');
@@ -14,6 +15,32 @@ export default function SignUpScreen() {
   const [loading, setLoading] = useState(false);
   const router = useRouter();
   const { signUp } = useAuthStore();
+  const theme = useTheme();
+  const uiKitTheme = useUIKitTheme();
+
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      justifyContent: 'center',
+    },
+    card: {
+      width: '100%',
+      maxWidth: 400,
+      alignSelf: 'center',
+      ...getCardStyle(uiKitTheme, { radius: 12, padding: theme.spacing.lg }),
+    },
+    title: {
+      marginBottom: theme.spacing.xl,
+      textAlign: 'center',
+    },
+    input: {
+      ...getTextInputStyle(uiKitTheme, { radius: 8, padding: theme.spacing.md, fontSize: 16 }),
+      marginBottom: theme.spacing.md,
+    },
+    button: {
+      marginTop: theme.spacing.sm,
+    },
+  });
 
   const handleSignUp = async () => {
     if (!email || !password) {
@@ -56,7 +83,7 @@ export default function SignUpScreen() {
           <TextInput
             style={styles.input}
             placeholder="Email"
-            placeholderTextColor={theme.colors.inputPlaceholder}
+            placeholderTextColor={uiKitTheme.input.placeholder}
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
@@ -67,7 +94,7 @@ export default function SignUpScreen() {
           <TextInput
             style={styles.input}
             placeholder="Password"
-            placeholderTextColor={theme.colors.inputPlaceholder}
+            placeholderTextColor={uiKitTheme.input.placeholder}
             value={password}
             onChangeText={setPassword}
             secureTextEntry
@@ -78,7 +105,7 @@ export default function SignUpScreen() {
           <TextInput
             style={styles.input}
             placeholder="Confirm Password"
-            placeholderTextColor={theme.colors.inputPlaceholder}
+            placeholderTextColor={uiKitTheme.input.placeholder}
             value={confirmPassword}
             onChangeText={setConfirmPassword}
             secureTextEntry
@@ -99,34 +126,3 @@ export default function SignUpScreen() {
     </Screen>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'center',
-  },
-  card: {
-    width: '100%',
-    maxWidth: 400,
-    alignSelf: 'center',
-    padding: theme.spacing.lg,
-    ...theme.card,
-  },
-  title: {
-    marginBottom: theme.spacing.xl,
-    textAlign: 'center',
-  },
-  input: {
-    backgroundColor: theme.card.backgroundColor,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: 8,
-    padding: theme.spacing.md,
-    marginBottom: theme.spacing.md,
-    color: theme.colors.text,
-    fontSize: 16,
-  },
-  button: {
-    marginTop: theme.spacing.sm,
-  },
-});

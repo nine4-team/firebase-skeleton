@@ -1,9 +1,11 @@
 import { useEffect } from 'react';
 import { Stack, useRouter, useSegments } from 'expo-router';
+import { View, StyleSheet } from 'react-native';
 import { useAuthStore } from '../src/auth/authStore';
 import { useBillingStore } from '../src/billing/billingStore';
 import { LoadingScreen } from '../src/components/LoadingScreen';
 import { isAuthBypassEnabled } from '../src/auth/authConfig';
+import { ThemeProvider } from '../src/theme/ThemeProvider';
 
 export default function RootLayout() {
   const { user, isInitialized, initialize } = useAuthStore();
@@ -35,15 +37,30 @@ export default function RootLayout() {
     }
   }, [user, isInitialized, billingInitialized, segments]);
 
-  if (!isInitialized || !billingInitialized) {
-    return <LoadingScreen />;
-  }
-
   return (
-    <Stack screenOptions={{ headerShown: false }}>
-      <Stack.Screen name="(auth)" />
-      <Stack.Screen name="(tabs)" />
-      <Stack.Screen name="paywall" />
-    </Stack>
+    <ThemeProvider>
+      <View style={styles.root}>
+        <Stack screenOptions={{ headerShown: false }}>
+          <Stack.Screen name="(auth)" />
+          <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="paywall" />
+        </Stack>
+
+        {(!isInitialized || !billingInitialized) && (
+          <View style={styles.loadingOverlay} pointerEvents="auto">
+            <LoadingScreen />
+          </View>
+        )}
+      </View>
+    </ThemeProvider>
   );
 }
+
+const styles = StyleSheet.create({
+  root: {
+    flex: 1,
+  },
+  loadingOverlay: {
+    ...StyleSheet.absoluteFillObject,
+  },
+});

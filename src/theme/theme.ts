@@ -1,14 +1,11 @@
 import {
-  lightTheme,
   typography,
   spacing,
   SCREEN_PADDING,
   getCardBaseStyle,
   getCardBorderStyle,
   type ColorTheme,
-} from '@nine4/ui-kit';
-
-export const uiKitTheme: ColorTheme = lightTheme;
+} from '../ui';
 
 /**
  * Recommended guardrail:
@@ -50,7 +47,5 @@ export function createThemeFromUIKit(baseTheme: ColorTheme) {
     },
   };
 }
-
-export const theme = createThemeFromUIKit(uiKitTheme);
 
 export type Theme = ReturnType<typeof createThemeFromUIKit>;

@@ -19,7 +19,8 @@ import { BrandLogo } from '../../src/components/BrandLogo';
 import { GoogleMark } from '../../src/components/GoogleMark';
 import { useAuthStore } from '../../src/auth/authStore';
 import { isAuthBypassEnabled } from '../../src/auth/authConfig';
-import { theme } from '../../src/theme/theme';
+import { useTheme, useUIKitTheme } from '../../src/theme/ThemeProvider';
+import { getCardStyle, getTextInputStyle } from '../../src/ui';
 
 function EyeIcon({ size = 20, color, crossed }: { size?: number; color: string; crossed?: boolean }) {
   return (
@@ -68,6 +69,145 @@ export default function SignInScreen() {
   const insets = useSafeAreaInsets();
   const { height: windowHeight } = useWindowDimensions();
   const [emailAnchorHeight, setEmailAnchorHeight] = useState<number | null>(null);
+  const theme = useTheme();
+  const uiKitTheme = useUIKitTheme();
+
+  const styles = useMemo(
+    () =>
+      StyleSheet.create({
+        container: {
+          flex: 1,
+          justifyContent: 'flex-start',
+        },
+        content: {
+          width: '100%',
+          maxWidth: 520,
+          alignSelf: 'center',
+        },
+        brandHeader: {
+          alignItems: 'center',
+          marginBottom: theme.spacing.lg,
+        },
+        brandLogoTile: {
+          backgroundColor: '#fff',
+          borderRadius: 26,
+          padding: 7,
+          borderWidth: 1,
+          borderColor: 'rgba(0,0,0,0.06)',
+          ...Platform.select({
+            ios: {
+              shadowColor: '#000',
+              shadowOpacity: 0.14,
+              shadowRadius: 28,
+              shadowOffset: { width: 0, height: 12 },
+            },
+            android: {
+              elevation: 10,
+            },
+            default: {},
+          }),
+        },
+        card: {
+          width: '100%',
+          alignSelf: 'center',
+          ...getCardStyle(uiKitTheme, { radius: 12, padding: theme.spacing.lg }),
+        },
+        tabs: {
+          flexDirection: 'row',
+          borderBottomWidth: 1,
+          borderBottomColor: theme.colors.border,
+          marginBottom: theme.spacing.lg,
+        },
+        tab: {
+          flex: 1,
+          paddingVertical: theme.spacing.sm,
+          borderBottomWidth: 2,
+          borderBottomColor: 'transparent',
+          alignItems: 'center',
+        },
+        tabActive: {
+          borderBottomColor: theme.colors.primary,
+        },
+        tabText: {
+          color: theme.colors.textSecondary,
+          fontWeight: '600',
+        },
+        tabTextActive: {
+          color: theme.colors.primary,
+        },
+        errorBanner: {
+          borderWidth: 1,
+          borderColor: theme.colors.error,
+          borderRadius: 12,
+          padding: theme.spacing.md,
+          marginBottom: theme.spacing.md,
+        },
+        errorText: {
+          color: theme.colors.error,
+        },
+        section: {
+          gap: theme.spacing.sm,
+        },
+        input: {
+          ...getTextInputStyle(uiKitTheme, {
+            radius: 8,
+            paddingVertical: 10,
+            paddingHorizontal: 12,
+            fontSize: 16,
+          }),
+        },
+        passwordRow: {
+          flexDirection: 'row',
+          alignItems: 'center',
+        },
+        passwordInput: {
+          flex: 1,
+          paddingRight: 56,
+        },
+        showHideButton: {
+          position: 'absolute',
+          right: 12,
+          height: '100%',
+          justifyContent: 'center',
+        },
+        googleIcon: {
+          marginTop: 1,
+        },
+        googleSignUpLink: {
+          marginTop: theme.spacing.sm,
+          alignItems: 'center',
+        },
+        googleSignUpText: {
+          color: theme.colors.primary,
+          fontWeight: '600',
+        },
+        primaryButton: {
+          marginTop: theme.spacing.md,
+        },
+        signUpLink: {
+          marginTop: theme.spacing.md,
+          alignItems: 'center',
+        },
+        signUpText: {
+          color: theme.colors.primary,
+          fontWeight: '600',
+        },
+      }),
+    [theme, uiKitTheme]
+  );
+  const dynamicStyles = useMemo(
+    () =>
+      StyleSheet.create({
+        insetsPadding: {
+          paddingTop: insets.top,
+          paddingBottom: insets.bottom,
+        },
+        anchorSpacer: {
+          height: anchorSpacerHeight,
+        },
+      }),
+    [anchorSpacerHeight, insets.bottom, insets.top]
+  );
 
   const trimmedEmail = useMemo(() => email.trim(), [email]);
 
@@ -80,7 +220,7 @@ export default function SignInScreen() {
     const usableHeight = windowHeight - insets.top - insets.bottom;
     const centeredTop = Math.max(0, (usableHeight - emailAnchorHeight) / 2);
     return Math.max(min, centeredTop);
-  }, [emailAnchorHeight, insets.bottom, insets.top, windowHeight]);
+  }, [emailAnchorHeight, insets.bottom, insets.top, theme, windowHeight]);
 
   const handleContentLayout = useCallback(
     (e: any) => {
@@ -124,9 +264,9 @@ export default function SignInScreen() {
     <Screen>
       <KeyboardAvoidingView
         behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
-        style={[styles.container, { paddingTop: insets.top, paddingBottom: insets.bottom }]}
+        style={[styles.container, dynamicStyles.insetsPadding]}
       >
-        <View style={{ height: anchorSpacerHeight }} />
+        <View style={dynamicStyles.anchorSpacer} />
         <View style={styles.content} onLayout={handleContentLayout}>
           <View style={styles.brandHeader}>
             <View style={styles.brandLogoTile}>
@@ -196,7 +336,7 @@ export default function SignInScreen() {
                 <TextInput
                   style={styles.input}
                   placeholder="Email"
-                  placeholderTextColor={theme.colors.inputPlaceholder}
+                  placeholderTextColor={uiKitTheme.input.placeholder}
                   value={email}
                   onChangeText={setEmail}
                   autoCapitalize="none"
@@ -210,7 +350,7 @@ export default function SignInScreen() {
                   <TextInput
                     style={[styles.input, styles.passwordInput]}
                     placeholder="Password"
-                    placeholderTextColor={theme.colors.inputPlaceholder}
+                    placeholderTextColor={uiKitTheme.input.placeholder}
                     value={password}
                     onChangeText={setPassword}
                     secureTextEntry={!showPassword}
@@ -260,125 +400,3 @@ export default function SignInScreen() {
   );
 }
 
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    justifyContent: 'flex-start',
-  },
-  content: {
-    width: '100%',
-    maxWidth: 520,
-    alignSelf: 'center',
-  },
-  brandHeader: {
-    alignItems: 'center',
-    marginBottom: theme.spacing.lg,
-  },
-  brandLogoTile: {
-    backgroundColor: '#fff',
-    borderRadius: 26,
-    padding: 7,
-    borderWidth: 1,
-    borderColor: 'rgba(0,0,0,0.06)',
-    ...Platform.select({
-      ios: {
-        shadowColor: '#000',
-        shadowOpacity: 0.14,
-        shadowRadius: 28,
-        shadowOffset: { width: 0, height: 12 },
-      },
-      android: {
-        elevation: 10,
-      },
-      default: {},
-    }),
-  },
-  card: {
-    width: '100%',
-    alignSelf: 'center',
-    padding: theme.spacing.lg,
-    ...theme.card,
-  },
-  tabs: {
-    flexDirection: 'row',
-    borderBottomWidth: 1,
-    borderBottomColor: theme.colors.border,
-    marginBottom: theme.spacing.lg,
-  },
-  tab: {
-    flex: 1,
-    paddingVertical: theme.spacing.sm,
-    borderBottomWidth: 2,
-    borderBottomColor: 'transparent',
-    alignItems: 'center',
-  },
-  tabActive: {
-    borderBottomColor: theme.colors.primary,
-  },
-  tabText: {
-    color: theme.colors.textSecondary,
-    fontWeight: '600',
-  },
-  tabTextActive: {
-    color: theme.colors.primary,
-  },
-  errorBanner: {
-    borderWidth: 1,
-    borderColor: theme.colors.error,
-    borderRadius: 12,
-    padding: theme.spacing.md,
-    marginBottom: theme.spacing.md,
-  },
-  errorText: {
-    color: theme.colors.error,
-  },
-  section: {
-    gap: theme.spacing.sm,
-  },
-  input: {
-    backgroundColor: theme.card.backgroundColor,
-    borderWidth: 1,
-    borderColor: theme.colors.border,
-    borderRadius: 8,
-    paddingVertical: 10,
-    paddingHorizontal: 12,
-    color: theme.colors.text,
-    fontSize: 16,
-  },
-  passwordRow: {
-    flexDirection: 'row',
-    alignItems: 'center',
-  },
-  passwordInput: {
-    flex: 1,
-    paddingRight: 56,
-  },
-  showHideButton: {
-    position: 'absolute',
-    right: 12,
-    height: '100%',
-    justifyContent: 'center',
-  },
-  googleIcon: {
-    marginTop: 1,
-  },
-  googleSignUpLink: {
-    marginTop: theme.spacing.sm,
-    alignItems: 'center',
-  },
-  googleSignUpText: {
-    color: theme.colors.primary,
-    fontWeight: '600',
-  },
-  primaryButton: {
-    marginTop: theme.spacing.md,
-  },
-  signUpLink: {
-    marginTop: theme.spacing.md,
-    alignItems: 'center',
-  },
-  signUpText: {
-    color: theme.colors.primary,
-    fontWeight: '600',
-  },
-});

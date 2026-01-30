@@ -1,18 +1,14 @@
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { useEffect } from 'react';
+import { Redirect, Stack, useLocalSearchParams } from 'expo-router';
 import { isAuthBypassEnabled } from '../../src/auth/authConfig';
 
 export default function AuthLayout() {
-  const router = useRouter();
   const params = useLocalSearchParams<{ preview?: string }>();
   const preview = params?.preview === '1' || params?.preview === 'true';
 
-  useEffect(() => {
-    // In guest/bypass mode we default to the app UI, unless explicitly previewing auth.
-    if (isAuthBypassEnabled && !preview) {
-      router.replace('/(tabs)');
-    }
-  }, [preview]);
+  // In guest/bypass mode we default to the app UI, unless explicitly previewing auth.
+  if (isAuthBypassEnabled && !preview) {
+    return <Redirect href="/(tabs)" />;
+  }
 
   return (
     <Stack screenOptions={{ headerShown: false }}>

@@ -1,8 +1,8 @@
-import React from 'react';
+import React, { useMemo } from 'react';
 import { View, TouchableOpacity, TouchableOpacityProps, StyleSheet, ActivityIndicator } from 'react-native';
 import { AppText } from './AppText';
-import { BUTTON_BORDER_RADIUS } from '@nine4/ui-kit';
-import { theme, uiKitTheme } from '../theme/theme';
+import { useTheme, useUIKitTheme } from '../theme/ThemeProvider';
+import { BUTTON_BORDER_RADIUS } from '../ui';
 
 interface AppButtonProps extends Omit<TouchableOpacityProps, 'style'> {
   title: string;
@@ -21,13 +21,40 @@ export const AppButton: React.FC<AppButtonProps> = ({
   style,
   ...props
 }) => {
+  const theme = useTheme();
+  const uiKitTheme = useUIKitTheme();
   const isPrimary = variant === 'primary';
+  const themed = useMemo(
+    () =>
+      StyleSheet.create({
+        padding: {
+          paddingVertical: theme.spacing.md,
+          paddingHorizontal: theme.spacing.lg,
+        },
+        primaryBg: {
+          backgroundColor: uiKitTheme.button.primary.background,
+        },
+        secondaryBg: {
+          backgroundColor: uiKitTheme.button.secondary.background,
+          borderColor: uiKitTheme.border.primary,
+        },
+        primaryTextColor: {
+          color: uiKitTheme.button.primary.text,
+        },
+        secondaryTextColor: {
+          color: uiKitTheme.button.secondary.text,
+        },
+      }),
+    [theme, uiKitTheme]
+  );
 
   return (
     <TouchableOpacity
       style={[
         styles.button,
-        isPrimary ? styles.primary : styles.secondary,
+        themed.padding,
+        isPrimary ? themed.primaryBg : styles.secondary,
+        !isPrimary && themed.secondaryBg,
         (disabled || loading) && styles.disabled,
         style,
       ]}
@@ -43,7 +70,10 @@ export const AppButton: React.FC<AppButtonProps> = ({
           {!!leftIcon && <View style={styles.leftIcon}>{leftIcon}</View>}
           <AppText
             variant="body"
-            style={[isPrimary ? styles.primaryText : styles.secondaryText]}
+            style={[
+              isPrimary ? styles.primaryText : styles.secondaryText,
+              isPrimary ? themed.primaryTextColor : themed.secondaryTextColor,
+            ]}
           >
             {title}
           </AppText>
@@ -55,8 +85,7 @@ export const AppButton: React.FC<AppButtonProps> = ({
 
 const styles = StyleSheet.create({
   button: {
-    paddingVertical: theme.spacing.md,
-    paddingHorizontal: theme.spacing.lg,
+    // Dynamic padding comes from theme adapter; applied inline.
     borderRadius: BUTTON_BORDER_RADIUS,
     alignItems: 'center',
     justifyContent: 'center',
@@ -70,23 +99,16 @@ const styles = StyleSheet.create({
   leftIcon: {
     marginRight: 10,
   },
-  primary: {
-    backgroundColor: uiKitTheme.button.primary.background,
-  },
   secondary: {
-    backgroundColor: uiKitTheme.button.secondary.background,
     borderWidth: 1,
-    borderColor: uiKitTheme.border.primary,
   },
   disabled: {
     opacity: 0.5,
   },
   primaryText: {
-    color: uiKitTheme.button.primary.text,
     fontWeight: '600',
   },
   secondaryText: {
-    color: uiKitTheme.button.secondary.text,
     fontWeight: '600',
   },
 });

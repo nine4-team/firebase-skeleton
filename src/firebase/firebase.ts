@@ -11,6 +11,9 @@ let db: Firestore | null = null;
 let functions: Functions | null = null;
 
 const useEmulators = process.env.EXPO_PUBLIC_USE_FIREBASE_EMULATORS === 'true';
+// Dev-only convenience: if you're bypassing auth entirely, don't initialize Firebase.
+// This avoids confusing errors (like auth/invalid-api-key) when demoing without real keys.
+const bypassFirebase = process.env.EXPO_PUBLIC_BYPASS_AUTH === 'true';
 
 const firebaseConfig = {
   apiKey: process.env.EXPO_PUBLIC_FIREBASE_API_KEY,
@@ -23,14 +26,14 @@ const firebaseConfig = {
 
 const hasMissingConfig = Object.values(firebaseConfig).some((value) => !value);
 export const isFirebaseConfigured = !hasMissingConfig;
-if (hasMissingConfig) {
+if (hasMissingConfig && !bypassFirebase) {
   console.warn(
     '[firebase] Missing EXPO_PUBLIC_FIREBASE_* environment variables. ' +
       'Auth and Firestore calls will fail until .env is configured.'
   );
 }
 
-if (isFirebaseConfigured) {
+if (isFirebaseConfigured && !bypassFirebase) {
   // Initialize Firebase
   if (getApps().length === 0) {
     app = initializeApp(firebaseConfig);

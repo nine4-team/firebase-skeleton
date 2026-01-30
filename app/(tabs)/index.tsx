@@ -1,121 +1,84 @@
-import { View, StyleSheet, Alert } from 'react-native';
-import { useRouter } from 'expo-router';
-import { Screen } from '../../src/components/Screen';
+import { ScrollView, StyleSheet, View } from 'react-native';
+
 import { AppText } from '../../src/components/AppText';
-import { AppButton } from '../../src/components/AppButton';
-import { BrandLogo } from '../../src/components/BrandLogo';
-import { useAuthStore } from '../../src/auth/authStore';
-import { useQuotaStore } from '../../src/quota/quotaStore';
-import { canCreate, requireProOrQuota } from '../../src/quota/quotaStore';
-import { appConfig } from '../../src/config/appConfig';
-import { theme } from '../../src/theme/theme';
-import { useEffect } from 'react';
+import { ExpandableCard } from '../../src/components/ExpandableCard';
+import { Screen } from '../../src/components/Screen';
+import { useScreenTabs } from '../../src/components/ScreenTabs';
+import { CARD_LIST_GAP, layout } from '../../src/ui';
 
-export default function HomeScreen() {
-  const router = useRouter();
-  const { user } = useAuthStore();
-  const { loadCounters, counters } = useQuotaStore();
-
-  useEffect(() => {
-    if (user) {
-      loadCounters(user.uid);
-    }
-  }, [user]);
-
-  const handleCreateObject = () => {
-    const objectKey = 'object'; // Example quota key
-    const quota = appConfig.quotas[objectKey];
-
-    if (!requireProOrQuota(objectKey)) {
-      // Show paywall
-      router.push('/paywall');
-      return;
-    }
-
-    // Proceed with creation (in real app, this would call a Cloud Function)
-    Alert.alert(
-      'Create Object',
-      `You can create this ${quota.displayName}. Current count: ${counters[objectKey] || 0}/${quota.freeLimit}`
-    );
-  };
-
-  const objectKey = 'object';
-  const quota = appConfig.quotas[objectKey];
-  const currentCount = counters[objectKey] || 0;
-
+export default function ComponentsScreen() {
   return (
-    <Screen>
-      <View style={styles.container}>
-        <View style={styles.logoRow}>
-          <BrandLogo size={72} />
-        </View>
-
-        <AppText variant="h1" style={styles.title}>
-          Welcome
-        </AppText>
-
-        <AppText variant="body" style={styles.subtitle}>
-          {user?.email}
-        </AppText>
-
-        {quota && (
-          <View style={styles.quotaSection}>
-            <AppText variant="h2" style={styles.quotaTitle}>
-              Quota Status
-            </AppText>
-            <AppText variant="body" style={styles.quotaText}>
-              {quota.displayName}: {currentCount} / {quota.freeLimit}
-            </AppText>
-            <AppText variant="caption" style={styles.quotaHint}>
-              {canCreate(objectKey)
-                ? `You can create ${quota.freeLimit - currentCount} more ${quota.displayName} for free`
-                : 'Upgrade to Pro for unlimited'}
-            </AppText>
-          </View>
-        )}
-
-        <AppButton
-          title="Create Object (Example)"
-          onPress={handleCreateObject}
-          style={styles.button}
-        />
-      </View>
+    <Screen 
+      title="Components"
+      tabs={[
+        { key: 'cards', label: 'Cards', accessibilityLabel: 'Cards tab' },
+        { key: 'tab-two', label: 'Tab Two', accessibilityLabel: 'Tab Two' },
+        { key: 'tab-three', label: 'Tab Three', accessibilityLabel: 'Tab Three' },
+      ]}
+      initialTabKey="cards"
+    >
+      <ComponentsScreenContent />
     </Screen>
   );
 }
 
+function ComponentsScreenContent() {
+  const screenTabs = useScreenTabs();
+  const selectedKey = screenTabs?.selectedKey ?? 'cards';
+
+  if (selectedKey === 'cards') {
+    return (
+      <ScrollView 
+        contentContainerStyle={styles.scrollContent}
+        showsVerticalScrollIndicator={false}
+      >
+        <ExpandableCard
+          title="Expandable Card"
+          expandableRow1={{ label: 'Expandable Field 1', value: 'Expandable Field 3' }}
+          expandableRow2={{ label: 'Expandable Field 2', value: 'Expandable Field 4' }}
+          alwaysShowRow1={{ label: 'Always Show 1', value: 'Always Show Value 1' }}
+          alwaysShowRow2={{ label: 'Always Show 2', value: 'Always Show Value 2' }}
+          menuBadgeEnabled
+          menuBadgeLabel="Badge"
+          menuItems={[
+            {
+              key: 'action-with-subactions',
+              label: 'Action 1',
+              defaultSelectedSubactionKey: 'subaction-1',
+              subactions: [
+                { key: 'subaction-1', label: 'Subaction 1', onPress: () => console.log('Subaction 1 pressed') },
+                { key: 'subaction-2', label: 'Subaction 2', onPress: () => console.log('Subaction 2 pressed') },
+              ],
+            },
+            { key: 'edit', label: 'Edit', onPress: () => console.log('Edit pressed') },
+            { key: 'delete', label: 'Delete', onPress: () => console.log('Delete pressed') },
+          ]}
+        />
+      </ScrollView>
+    );
+  }
+
+  if (selectedKey === 'tab-two') {
+    return (
+      <View style={styles.placeholder}>
+        <AppText variant="body">Tab Two content goes here.</AppText>
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.placeholder}>
+      <AppText variant="body">Tab Three content goes here.</AppText>
+    </View>
+  );
+}
+
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    paddingTop: theme.spacing.xl,
+  scrollContent: {
+    paddingTop: layout.screenBodyTopMd.paddingTop,
+    gap: CARD_LIST_GAP,
   },
-  logoRow: {
-    alignItems: 'center',
-    marginBottom: theme.spacing.lg,
-  },
-  title: {
-    marginBottom: theme.spacing.sm,
-  },
-  subtitle: {
-    marginBottom: theme.spacing.xl,
-    color: theme.colors.textSecondary,
-  },
-  quotaSection: {
-    backgroundColor: theme.card.backgroundColor,
-    padding: theme.spacing.lg,
-    borderRadius: 8,
-    marginBottom: theme.spacing.xl,
-  },
-  quotaTitle: {
-    marginBottom: theme.spacing.sm,
-  },
-  quotaText: {
-    marginBottom: theme.spacing.xs,
-  },
-  quotaHint: {
-    marginTop: theme.spacing.xs,
-  },
-  button: {
-    marginTop: theme.spacing.md,
+  placeholder: {
+    paddingTop: layout.screenBodyTopMd.paddingTop,
   },
 });

@@ -31,7 +31,8 @@
     "scheme": "expofirebaseskeleton",
     "plugins": [
       "expo-router",
-      "expo-asset"
+      "expo-asset",
+      "expo-font"
     ]
   }
 }
