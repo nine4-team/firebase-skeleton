@@ -15,6 +15,7 @@ install! 'cocoapods',
 # See: "Swift pods cannot yet be integrated as static libraries" error.
 use_modular_headers!
 
+
 prepare_react_native_project!
 
 target 'ExpoFirebaseSkeleton' do
@@ -65,48 +66,6 @@ target 'ExpoFirebaseSkeleton' do
           config.build_settings['CODE_SIGNING_ALLOWED'] = 'NO'
         end
       end
-    end
-
-    # Fix for gRPC-C++ module map not found error
-    # The gRPC-Core module map is located in "Target Support Files" but referenced in "Headers/Private"
-    # This affects gRPC-C++ and FirebaseFirestoreInternal among others.
-    # We update all xcconfig files in Target Support Files to ensure any target referencing the wrong path is fixed.
-    target_support_files = File.join(installer.sandbox.root, 'Target Support Files')
-    Dir.glob("#{target_support_files}/**/*.xcconfig").each do |xcconfig|
-      if File.exist?(xcconfig)
-        content = File.read(xcconfig)
-        if content.include? 'Headers/Private/grpc/gRPC-Core.modulemap'
-          new_content = content.gsub(
-            '${PODS_ROOT}/Headers/Private/grpc/gRPC-Core.modulemap',
-            '${PODS_ROOT}/Target Support Files/gRPC-Core/gRPC-Core.modulemap'
-          )
-          File.write(xcconfig, new_content)
-        end
-      end
-    end
-
-    # Fix for Firebase *-Swift.h not found error
-    # Firebase.h tries to import Swift headers but they are sometimes not found in the search paths.
-    # We patch Firebase.h to use a safer include check for all Swift header imports.
-    firebase_header = File.join(installer.sandbox.root, 'Headers/Private/Firebase/Firebase.h')
-    if File.exist?(firebase_header)
-      File.chmod(0644, firebase_header)
-      content = File.read(firebase_header)
-      
-      # Regex to match #import <Module/Module-Swift.h>
-      regex = /#import <(\w+)\/(\w+-Swift\.h)>/
-      
-      new_content = content.gsub(regex) do |match|
-        module_name = $1
-        header_name = $2
-        "#if __has_include(<#{module_name}/#{header_name}>)\n" +
-        "  #import <#{module_name}/#{header_name}>\n" +
-        "#elif __has_include(\"#{header_name}\")\n" +
-        "  #import \"#{header_name}\"\n" +
-        "#endif"
-      end
-      
-      File.write(firebase_header, new_content)
     end
   end
 end
