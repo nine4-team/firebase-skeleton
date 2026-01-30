@@ -17,6 +17,10 @@ export type ItemCardProps = {
   statusLabel?: string;
   thumbnailUri?: string;
 
+  // Layout options
+  // When true, SKU and source/transaction render on separate lines (instead of "SKU • Source").
+  stackSkuAndSource?: boolean;
+
   selected?: boolean;
   defaultSelected?: boolean;
   onSelectedChange?: (selected: boolean) => void;
@@ -41,6 +45,7 @@ export function ItemCard({
   indexLabel,
   statusLabel,
   thumbnailUri,
+  stackSkuAndSource,
   selected,
   defaultSelected,
   onSelectedChange,
@@ -54,6 +59,7 @@ export function ItemCard({
   const uiKitTheme = useUIKitTheme();
   const [internalSelected, setInternalSelected] = useState(Boolean(defaultSelected));
   const isSelected = typeof selected === 'boolean' ? selected : internalSelected;
+  const stackedMeta = stackSkuAndSource ?? true;
 
   const themed = useMemo(
     () =>
@@ -234,26 +240,24 @@ export function ItemCard({
           </View>
 
           <View style={styles.textCol}>
-            {(sku || sourceLabel) ? (
-              <View style={styles.metaRow}>
+            {(sku || sourceLabel || locationLabel) ? (
+              <View style={styles.metaCol}>
+                {sourceLabel ? (
+                  <Text style={[styles.metaText, themed.metaText]} numberOfLines={1}>
+                    <Text style={styles.metaStrong}>Source:</Text> {sourceLabel}
+                  </Text>
+                ) : null}
                 {sku ? (
                   <Text style={[styles.metaText, themed.metaText]} numberOfLines={1}>
                     <Text style={styles.metaStrong}>SKU:</Text> {sku}
                   </Text>
                 ) : null}
-                {sku && sourceLabel ? <Text style={[styles.metaText, themed.metaText]}> {' • '} </Text> : null}
-                {sourceLabel ? (
-                  <Text style={[styles.metaText, themed.metaText]} numberOfLines={1}>
-                    {sourceLabel}
+                {locationLabel ? (
+                  <Text style={[styles.metaText, themed.metaText]} numberOfLines={2}>
+                    <Text style={styles.metaStrong}>Location:</Text> {locationLabel}
                   </Text>
                 ) : null}
               </View>
-            ) : null}
-
-            {locationLabel ? (
-              <Text style={[styles.metaText, themed.metaText]} numberOfLines={2}>
-                <Text style={styles.metaStrong}>Location:</Text> {locationLabel}
-              </Text>
             ) : null}
           </View>
         </View>
@@ -355,11 +359,15 @@ const styles = StyleSheet.create({
     fontWeight: '600',
     includeFontPadding: false,
     lineHeight: 20,
+    paddingVertical: 2,
   },
   metaRow: {
     flexDirection: 'row',
     flexWrap: 'wrap',
     alignItems: 'center',
+  },
+  metaCol: {
+    gap: 6,
   },
   metaText: {
     fontSize: 13,

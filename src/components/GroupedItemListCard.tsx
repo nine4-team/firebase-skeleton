@@ -213,6 +213,7 @@ export function GroupedItemCard({
               locationLabel={summary.locationLabel}
               notes={summary.notes}
               thumbnailUri={summary.thumbnailUri}
+              stackSkuAndSource
               // Explicitly undefined control props to prevent top row rendering
               selected={undefined}
               defaultSelected={undefined}
@@ -239,6 +240,7 @@ export function GroupedItemCard({
               <ItemCard
                 {...item}
                 indexLabel={`${idx + 1}/${items.length}`}
+                stackSkuAndSource
                 style={[
                   idx < items.length - 1 ? { marginBottom: 12 } : null,
                 ]}

@@ -124,6 +124,7 @@ function ComponentsScreenContent() {
           ]}
           defaultExpanded={false}
         />
+
       </ScrollView>
     );
   }
